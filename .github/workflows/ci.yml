@@ -1,0 +1,32 @@
+name: List System Properties
+
+on: [push, pull_request]
+
+jobs:
+  list-properties:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Display system properties
+      run: |
+        echo "System Properties:"
+        echo "------------------"
+        echo "Operating System: $env:OS"
+        echo "Computer Name: $env:COMPUTERNAME"
+        echo "Processor Architecture: $env:PROCESSOR_ARCHITECTURE"
+        echo "Number of Processors: $env:NUMBER_OF_PROCESSORS"
+        echo "System Drive: $env:SystemDrive"
+        echo "System Root: $env:SystemRoot"
+        echo "User Profile: $env:USERPROFILE"
+        echo "PowerShell Version: $($PSVersionTable.PSVersion)"
+        echo "CPU Info:"
+        Get-WmiObject Win32_Processor | Select-Object -Property Name, NumberOfCores, NumberOfLogicalProcessors
+        echo "Memory Info:"
+        Get-WmiObject Win32_PhysicalMemory | Select-Object -Property Capacity, Speed, Manufacturer
+        echo "Disk Usage:"
+        Get-PSDrive -PSProvider FileSystem | Select-Object -Property Name, Used, Free, @{Name="Used(GB)";Expression={[math]::round($_.Used/1GB,2)}}, @{Name="Free(GB)";Expression={[math]::round($_.Free/1GB,2)}}
+        echo "Environment Variables:"
+        Get-ChildItem Env:
